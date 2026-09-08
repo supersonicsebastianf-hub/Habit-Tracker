@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Daydream | Habit tracker</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			--ink: #26342f;
+			--muted: #72817a;
+			--paper: #fbfaf6;
+			--cream: #f1eee5;
+			--sage: #b4c9b1;
+			--deep-sage: #5e846f;
+			--coral: #e58b73;
+			--sun: #f3c978;
+			--lavender: #c8c1dc;
+			--line: #e6e4da;
+			--shadow: 0 20px 50px rgba(73, 89, 80, 0.10);
+		}
+
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			min-height: 100vh;
+			color: var(--ink);
+			font-family: "DM Sans", sans-serif;
+			background:
+				radial-gradient(circle at 83% 8%, rgba(229, 139, 115, .18) 0 10%, transparent 23%),
+				radial-gradient(circle at 6% 92%, rgba(180, 201, 177, .34) 0 13%, transparent 30%),
+				var(--paper);
+		}
+
+		button, input { font: inherit; }
+		button { cursor: pointer; }
+		.page { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 32px 0 50px; }
+		.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 52px; }
+		.brand { display: flex; gap: 12px; align-items: center; font-weight: 700; letter-spacing: -.02em; }
+		.brand-mark { display: grid; place-items: center; width: 37px; height: 37px; color: white; background: var(--deep-sage); border-radius: 13px 13px 13px 4px; transform: rotate(-5deg); font-size: 20px; }
+		.brand span:last-child { font-size: 18px; }
+		.today { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+
+		.hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 42px; align-items: end; margin-bottom: 42px; }
+		h1, h2, h3, p { margin: 0; }
+		h1 { max-width: 620px; font: 700 clamp(42px, 6vw, 76px)/.99 "Fraunces", serif; letter-spacing: -.045em; }
+		h1 em { color: var(--coral); font-style: normal; }
+		.intro { max-width: 390px; color: var(--muted); font-size: 16px; line-height: 1.65; padding-bottom: 5px; }
+		.intro strong { color: var(--deep-sage); font-weight: 700; }
+
+		.layout { display: grid; grid-template-columns: minmax(0, 1.42fr) minmax(280px, .58fr); gap: 22px; align-items: start; }
+		.panel { background: rgba(255,255,255,.72); border: 1px solid rgba(230, 228, 218, .95); border-radius: 24px; box-shadow: var(--shadow); }
+		.habits-panel { padding: 28px; }
+		.panel-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+		.panel-heading h2 { font: 600 27px "Fraunces", serif; letter-spacing: -.025em; }
+		.count { color: var(--muted); font-size: 13px; }
+		.add-button { display: flex; align-items: center; gap: 8px; border: 0; background: var(--ink); color: #fff; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 700; transition: transform .2s, background .2s; }
+		.add-button:hover { background: var(--deep-sage); transform: translateY(-2px); }
+		.add-button span { display: grid; place-items: center; width: 17px; height: 17px; background: rgba(255,255,255,.18); border-radius: 50%; font-size: 17px; line-height: 1; }
+
+		.habit-list { display: grid; gap: 12px; }
+		.habit { display: grid; grid-template-columns: 46px minmax(120px, 1fr) auto; align-items: center; gap: 14px; min-height: 84px; padding: 14px 16px 14px 14px; background: var(--cream); border-radius: 16px; transition: transform .2s, background .2s; }
+		.habit:hover { transform: translateX(3px); background: #ece9de; }
+		.habit.is-done { background: #e8f0e5; }
+		.check { width: 42px; height: 42px; border: 2px solid #c7cec5; border-radius: 13px; background: rgba(255,255,255,.55); color: white; font-size: 19px; transition: all .2s; }
+		.check:hover { border-color: var(--deep-sage); }
+		.is-done .check { border-color: var(--deep-sage); background: var(--deep-sage); }
+		.habit-name { display: block; font-weight: 700; font-size: 15px; margin-bottom: 5px; }
+		.is-done .habit-name { text-decoration: line-through; text-decoration-color: var(--deep-sage); }
+		.habit-note { color: var(--muted); font-size: 12px; }
+		.streak { display: flex; align-items: center; gap: 5px; color: var(--coral); font-size: 12px; font-weight: 700; white-space: nowrap; }
+		.streak small { color: var(--muted); font-size: 11px; font-weight: 500; }
+		.remove { margin-left: 10px; border: 0; color: #a0aaa3; background: transparent; font-size: 18px; opacity: 0; transition: opacity .2s; }
+		.habit:hover .remove { opacity: 1; }
+		.empty { color: var(--muted); text-align: center; padding: 35px 15px; border: 1px dashed #cbd2c8; border-radius: 16px; font-size: 14px; }
+
+		.side { display: grid; gap: 22px; }
+		.progress-card { padding: 25px; background: var(--deep-sage); color: white; overflow: hidden; position: relative; }
+		.progress-card::after { content: ""; position: absolute; width: 145px; height: 145px; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; right: -55px; top: -45px; box-shadow: 0 0 0 18px rgba(255,255,255,.04), 0 0 0 38px rgba(255,255,255,.04); }
+		.eyebrow { opacity: .7; text-transform: uppercase; letter-spacing: .1em; font-size: 10px; font-weight: 700; }
+		.progress-number { display: flex; align-items: baseline; gap: 8px; margin: 20px 0 14px; }
+		.progress-number strong { font: 700 51px/1 "Fraunces", serif; }
+		.progress-number span { opacity: .7; font-size: 13px; }
+		.bar { height: 8px; background: rgba(255,255,255,.23); border-radius: 10px; overflow: hidden; }
+		.bar span { display: block; height: 100%; width: 0; background: var(--sun); border-radius: inherit; transition: width .4s ease; }
+		.progress-copy { margin-top: 12px; opacity: .83; font-size: 12px; line-height: 1.5; }
+		.reward-card { padding: 25px; }
+		.reward-card h3 { font: 600 22px "Fraunces", serif; margin: 8px 0 18px; }
+		.reward { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+		.reward:last-child { border-bottom: 0; padding-bottom: 0; }
+		.reward-icon { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 12px; background: #f6e9c7; font-size: 18px; }
+		.reward.locked .reward-icon { background: #efeee9; filter: grayscale(1); }
+		.reward-title { font-size: 13px; font-weight: 700; }
+		.reward-sub { color: var(--muted); font-size: 11px; margin-top: 3px; }
+		.reward.locked { opacity: .5; }
+		.points { margin-left: auto; color: var(--coral); font-size: 12px; font-weight: 700; }
+
+		.modal-backdrop { display: none; position: fixed; inset: 0; z-index: 3; place-items: center; padding: 20px; background: rgba(38,52,47,.28); backdrop-filter: blur(5px); }
+		.modal-backdrop.open { display: grid; }
+		.modal { width: min(420px, 100%); padding: 28px; background: var(--paper); border-radius: 22px; box-shadow: 0 25px 70px rgba(38,52,47,.25); animation: rise .25s ease both; }
+		@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+		.modal h2 { font: 600 27px "Fraunces", serif; margin-bottom: 7px; }
+		.modal p { color: var(--muted); font-size: 13px; line-height: 1.5; margin-bottom: 20px; }
+		.modal label { display: block; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 7px; }
+		.modal input { width: 100%; border: 1px solid #d9ddd5; border-radius: 11px; padding: 13px; outline: 0; color: var(--ink); background: white; }
+		.modal input:focus { border-color: var(--deep-sage); box-shadow: 0 0 0 3px rgba(94,132,111,.13); }
+		.modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+		.modal-actions button { border: 0; border-radius: 10px; padding: 11px 16px; font-size: 13px; font-weight: 700; }
+		.cancel { color: var(--muted); background: transparent; }
+		.save { color: white; background: var(--ink); }
+		.toast { position: fixed; z-index: 4; left: 50%; bottom: 25px; padding: 13px 18px; color: white; background: var(--ink); border-radius: 12px; box-shadow: var(--shadow); font-size: 13px; transform: translate(-50%, 90px); transition: transform .3s ease; }
+		.toast.show { transform: translate(-50%, 0); }
+		@media (max-width: 780px) {
+			.page { width: min(100% - 28px, 600px); padding-top: 22px; }
+			.topbar { margin-bottom: 38px; }
+			.hero { display: block; margin-bottom: 28px; }
+			h1 { margin-bottom: 18px; }
+			.layout { grid-template-columns: 1fr; }
+			.side { grid-template-columns: 1fr 1fr; }
+		}
+		@media (max-width: 520px) {
+			.habits-panel { padding: 18px; }
+			.panel-heading { align-items: flex-start; gap: 12px; }
+			.panel-heading h2 { font-size: 24px; }
+			.add-button { padding: 9px 10px; }
+			.habit { grid-template-columns: 40px minmax(0, 1fr); gap: 11px; padding-right: 10px; }
+			.check { width: 38px; height: 38px; }
+			.streak { grid-column: 2; }
+			.remove { position: absolute; right: 8px; top: 7px; }
+			.habit { position: relative; }
+			.side { grid-template-columns: 1fr; }
+			h1 { font-size: 47px; }
+		}
+	</style>
+</head>
+<body>
+	<main class="page">
+		<header class="topbar">
+			<div class="brand"><div class="brand-mark">✦</div><span>daydream</span></div>
+			<div class="today" id="todayLabel"></div>
+		</header>
+
+		<section class="hero">
+			<h1>Small steps,<br /><em>softer days.</em></h1>
+			<p class="intro">A gentle place to keep promises to yourself. <strong>Show up as you are</strong>, then let the little wins add up.</p>
+		</section>
+
+		<section class="layout">
+			<section class="panel habits-panel">
+				<div class="panel-heading">
+					<div><h2>Today's rhythm</h2><span class="count" id="habitCount"></span></div>
+					<button class="add-button" id="openModal"><span>+</span> New habit</button>
+				</div>
+				<div class="habit-list" id="habitList"></div>
+			</section>
+
+			<aside class="side">
+				<section class="panel progress-card">
+					<div class="eyebrow">Your daily glow</div>
+					<div class="progress-number"><strong id="progressNumber">0%</strong><span>complete</span></div>
+					<div class="bar"><span id="progressBar"></span></div>
+					<p class="progress-copy" id="progressCopy">A fresh page is waiting for you.</p>
+				</section>
+				<section class="panel reward-card">
+					<div class="eyebrow">Little rewards</div>
+					<h3>Keep going, lovely.</h3>
+					<div id="rewardList"></div>
+				</section>
+			</aside>
+		</section>
+	</main>
+
+	<div class="modal-backdrop" id="modalBackdrop">
+		<form class="modal" id="habitForm">
+			<h2>Add a habit</h2>
+			<p>What would make today feel a little more like yours?</p>
+			<label for="habitName">Habit name</label>
+			<input id="habitName" maxlength="42" placeholder="e.g. Drink a glass of water" autocomplete="off" required />
+			<div class="modal-actions"><button type="button" class="cancel" id="closeModal">Maybe later</button><button class="save" type="submit">Add habit</button></div>
+		</form>
+	</div>
+	<div class="toast" id="toast"></div>
+
+	<script>
+		const seedHabits = [
+			{ id: 1, name: "Morning pages", note: "A quiet start", streak: 4, done: false },
+			{ id: 2, name: "Move my body", note: "Even ten minutes counts", streak: 7, done: true },
+			{ id: 3, name: "Read a few pages", note: "Let the world get quiet", streak: 2, done: false }
+		];
+		const rewards = [
+			{ icon: "☕", title: "Slow morning", sub: "Take an unrushed coffee break", points: 30 },
+			{ icon: "🌿", title: "A little treat", sub: "You earned something lovely", points: 75 },
+			{ icon: "✈", title: "Daydream unlocked", sub: "A whole week of showing up", points: 150 }
+		];
+		const storageKey = "daydream-state";
+		const todayKey = new Date().toISOString().slice(0, 10);
+		let savedState;
+		try {
+			savedState = JSON.parse(localStorage.getItem(storageKey) || "null");
+		} catch (error) {
+			savedState = null;
+		}
+		if (!savedState) {
+			const legacyHabits = JSON.parse(localStorage.getItem("daydream-habits") || "null");
+			savedState = { habits: legacyHabits, points: Number(localStorage.getItem("daydream-points") || 20), date: todayKey };
+		}
+		let habits = Array.isArray(savedState.habits) ? savedState.habits : seedHabits.map(habit => ({ ...habit }));
+		let points = Number.isFinite(savedState.points) ? savedState.points : 20;
+		if (savedState.date !== todayKey) habits = habits.map(habit => ({ ...habit, done: false }));
+		const $ = (id) => document.getElementById(id);
+
+		function save() {
+			localStorage.setItem(storageKey, JSON.stringify({ habits, points, date: todayKey }));
+		}
+
+		function render() {
+			const completed = habits.filter(habit => habit.done).length;
+			const percent = habits.length ? Math.round(completed / habits.length * 100) : 0;
+			$("habitCount").textContent = habits.length + (habits.length === 1 ? " habit" : " habits");
+			$("progressNumber").textContent = percent + "%";
+			$("progressBar").style.width = percent + "%";
+			$("progressCopy").textContent = percent === 100 && habits.length ? "You kept every promise today. Beautiful." : completed ? "Your momentum is already glowing." : "A fresh page is waiting for you.";
+			$("habitList").innerHTML = habits.length ? habits.map(habit => `
+				<article class="habit ${habit.done ? "is-done" : ""}">
+					<button class="check" aria-label="${habit.done ? "Mark incomplete" : "Mark complete"}" data-id="${habit.id}">${habit.done ? "✓" : ""}</button>
+					<div><span class="habit-name">${escapeHtml(habit.name)}</span><span class="habit-note">${escapeHtml(habit.note || "A promise to yourself")}</span></div>
+					<div class="streak">✦ ${habit.streak} <small>day streak</small><button class="remove" aria-label="Remove ${escapeHtml(habit.name)}" data-remove="${habit.id}">×</button></div>
+				</article>`).join("") : '<div class="empty">Nothing here yet. Add one small thing you would like to do today.</div>';
+			$("rewardList").innerHTML = rewards.map(reward => `
+				<div class="reward ${points < reward.points ? "locked" : ""}"><div class="reward-icon">${reward.icon}</div><div><div class="reward-title">${reward.title}</div><div class="reward-sub">${points >= reward.points ? reward.sub : "Unlocks at " + reward.points + " points"}</div></div><div class="points">${points >= reward.points ? "✓" : reward.points}</div></div>`).join("");
+			document.querySelectorAll("[data-id]").forEach(button => button.addEventListener("click", toggleHabit));
+			document.querySelectorAll("[data-remove]").forEach(button => button.addEventListener("click", removeHabit));
+		}
+
+		function escapeHtml(value) { return value.replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" }[char])); }
+		function toggleHabit(event) {
+			const habit = habits.find(item => item.id === Number(event.currentTarget.dataset.id));
+			habit.done = !habit.done;
+			if (habit.done) { habit.streak += 1; points += 10; showToast("+10 points · lovely work"); }
+			else { habit.streak = Math.max(0, habit.streak - 1); points = Math.max(0, points - 10); }
+			save(); render();
+		}
+		function removeHabit(event) { habits = habits.filter(habit => habit.id !== Number(event.currentTarget.dataset.remove)); save(); render(); }
+		function showToast(message) { const toast = $("toast"); toast.textContent = message; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2200); }
+		function closeModal() { $("modalBackdrop").classList.remove("open"); $("habitName").value = ""; }
+
+		$("todayLabel").textContent = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "short", day: "numeric" }).format(new Date());
+		$("openModal").addEventListener("click", () => { $("modalBackdrop").classList.add("open"); $("habitName").focus(); });
+		$("closeModal").addEventListener("click", closeModal);
+		$("modalBackdrop").addEventListener("click", event => { if (event.target === $("modalBackdrop")) closeModal(); });
+		$("habitForm").addEventListener("submit", event => { event.preventDefault(); const name = $("habitName").value.trim(); if (!name) return; habits.push({ id: Date.now(), name, note: "A promise to yourself", streak: 0, done: false }); save(); render(); closeModal(); showToast("A new ritual begins"); });
+		save();
+		render();
+	</script>
+</body>
+</html>
